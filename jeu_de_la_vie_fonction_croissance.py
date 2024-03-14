@@ -1,6 +1,7 @@
 import pygame
 from constants import *
-from random import randint
+import random
+import numpy as np
 
 class Game:
 
@@ -27,7 +28,7 @@ class Game:
         for _ in range(self.nmbr_case_h):
             line = []
             for _ in range(self.nmbr_case_w):
-                line.append(randint(0, 1))
+                line.append(random.random())
             self.board.append(line)
 
     def affichage_quadrillage(self):
@@ -38,14 +39,17 @@ class Game:
         for dh in range(self.nmbr_case_h):
             pygame.draw.line(self.screen, NOIR, (0, dh*self.long_case_h), (self.w, dh*self.long_case_h))
 
+    # Fonction gaussienne centrée en 3 prenant les valeurs de -1 à 1
+    def fonction_croissance(self, x):
+        return np.exp(-(x-1.75) ** 2)
+
     def affichage_board(self):
         for dh in range(self.nmbr_case_h):
             for dw in range(self.nmbr_case_w):
-                if self.board[dh][dw] == 1:
-                    pygame.draw.rect(self.screen, NOIR, pygame.Rect(dw*self.long_case_w, dh*self.long_case_h, self.long_case_w, self.long_case_h))
+                pygame.draw.rect(self.screen, tuple(self.board[dh][dw]* color for color in BLANC), pygame.Rect(dw*self.long_case_w, dh*self.long_case_h, self.long_case_w, self.long_case_h))
 
-    def calcul_alive_cell_near(self, h, w):
-        nmbre_alive = 0
+    def calcul_score_near(self, h, w):
+        score = 0
         for dh in range(h-1, h+2):
             for dw in range(w-1, w+2):
                 if dw == w and dh == h:
@@ -58,22 +62,17 @@ class Game:
                     dh = self.nmbr_case_h - 1
                 if dh >= self.nmbr_case_h:
                     dh = 0
-                if self.board[dh][dw] == 1:
-                    nmbre_alive += 1
-        return nmbre_alive
+                score += self.board[dh][dw]
+        return score
 
     def calcul_next_board(self):
         new_board = []
         for dh in range(self.nmbr_case_h):
             new_line = []
             for dw in range(self.nmbr_case_w):
-                nmbre_cell_alive = self.calcul_alive_cell_near(dh, dw)
-                if nmbre_cell_alive == 3 and self.board[dh][dw] == 0:
-                    new_line.append(1)
-                elif nmbre_cell_alive not in [2, 3] and self.board[dh][dw] == 1:
-                    new_line.append(0)
-                else:
-                    new_line.append(self.board[dh][dw])
+                score = self.calcul_score_near(dh, dw)
+                taux_croissance = self.fonction_croissance(score)
+                new_line.append((self.board[dh][dw]+taux_croissance)/2)
             new_board.append(new_line)
         return new_board
 

@@ -1,4 +1,4 @@
-from jeu_de_la_vie import *
+from jeu_de_la_vie_fonction_croissance import *
 
 def main():
 
