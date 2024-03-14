@@ -41,38 +41,44 @@ class Game:
 
     # Fonction gaussienne centrée en 3 prenant les valeurs de -1 à 1
     def fonction_croissance(self, x):
-        return np.exp(-(x-1.75) ** 2)
+        return 2*np.exp(-((x-0.40)/0.2) ** 2)-1
 
     def affichage_board(self):
         for dh in range(self.nmbr_case_h):
             for dw in range(self.nmbr_case_w):
                 pygame.draw.rect(self.screen, tuple(self.board[dh][dw]* color for color in BLANC), pygame.Rect(dw*self.long_case_w, dh*self.long_case_h, self.long_case_w, self.long_case_h))
 
-    def calcul_score_near(self, h, w):
+    def calcul_score_near(self, h, w, rayon=1):
         score = 0
-        for dh in range(h-1, h+2):
-            for dw in range(w-1, w+2):
+        for dh in range(h-rayon, h+rayon+1):
+            for dw in range(w-rayon, w+rayon+1):
                 if dw == w and dh == h:
                     continue
                 if dw < 0:
-                    dw = self.nmbr_case_w - 1
+                    dw += self.nmbr_case_w
                 if dw >= self.nmbr_case_w:
-                    dw = 0
+                    dw -= self.nmbr_case_w
                 if dh < 0:
-                    dh = self.nmbr_case_h - 1
+                    dh += self.nmbr_case_h
                 if dh >= self.nmbr_case_h:
-                    dh = 0
+                    dh -= self.nmbr_case_h
                 score += self.board[dh][dw]
         return score
 
     def calcul_next_board(self):
         new_board = []
+        rayon = 1
         for dh in range(self.nmbr_case_h):
             new_line = []
             for dw in range(self.nmbr_case_w):
-                score = self.calcul_score_near(dh, dw)
-                taux_croissance = self.fonction_croissance(score)
-                new_line.append((self.board[dh][dw]+taux_croissance)/2)
+                score = self.calcul_score_near(dh, dw, rayon)
+                taux_croissance = self.fonction_croissance(score/( (2*rayon + 1)**2 - 1) )
+                new_value = self.board[dh][dw]*(1+taux_croissance)
+                if new_value > 1:
+                    new_value = 1
+                if new_value < 0:
+                    new_value = 0
+                new_line.append(new_value)
             new_board.append(new_line)
         return new_board
 
@@ -81,7 +87,6 @@ class Game:
         pygame.init()
         
         self.init_board()
-
         running = True
         while running:
 

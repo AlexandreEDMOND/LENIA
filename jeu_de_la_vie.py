@@ -51,13 +51,13 @@ class Game:
                 if dw == w and dh == h:
                     continue
                 if dw < 0:
-                    dw = self.nmbr_case_w - 1
+                    dw += self.nmbr_case_w
                 if dw >= self.nmbr_case_w:
-                    dw = 0
+                    dw -= self.nmbr_case_w
                 if dh < 0:
-                    dh = self.nmbr_case_h - 1
+                    dh += self.nmbr_case_h
                 if dh >= self.nmbr_case_h:
-                    dh = 0
+                    dh -= self.nmbr_case_h
                 if self.board[dh][dw] == 1:
                     nmbre_alive += 1
         return nmbre_alive
